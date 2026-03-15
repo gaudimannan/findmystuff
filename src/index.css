@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 37 33% 93%;
+    --foreground: 216 55% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 216 55% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 216 55% 7%;
+
+    --primary: 37 91% 55%;
+    --primary-foreground: 216 55% 7%;
+
+    --secondary: 216 55% 7%;
+    --secondary-foreground: 37 33% 93%;
+
+    --muted: 37 20% 88%;
+    --muted-foreground: 216 20% 40%;
+
+    --accent: 37 91% 55%;
+    --accent-foreground: 216 55% 7%;
+
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 216 30% 80%;
+    --input: 216 20% 75%;
+    --ring: 37 91% 55%;
+
+    --radius: 4px;
+
+    --sidebar-background: 216 55% 7%;
+    --sidebar-foreground: 37 33% 93%;
+    --sidebar-primary: 37 91% 55%;
+    --sidebar-primary-foreground: 216 55% 7%;
+    --sidebar-accent: 216 40% 15%;
+    --sidebar-accent-foreground: 37 33% 93%;
+    --sidebar-border: 216 30% 20%;
+    --sidebar-ring: 37 91% 55%;
+
+    --navy: 216 55% 7%;
+    --amber: 37 91% 55%;
+    --off-white: 37 33% 93%;
+    --navy-light: 216 30% 25%;
+  }
+
+  .dark {
+    --background: 216 55% 7%;
+    --foreground: 37 33% 93%;
+    --card: 216 40% 12%;
+    --card-foreground: 37 33% 93%;
+    --popover: 216 40% 12%;
+    --popover-foreground: 37 33% 93%;
+    --primary: 37 91% 55%;
+    --primary-foreground: 216 55% 7%;
+    --secondary: 37 33% 93%;
+    --secondary-foreground: 216 55% 7%;
+    --muted: 216 30% 20%;
+    --muted-foreground: 216 15% 60%;
+    --accent: 37 91% 55%;
+    --accent-foreground: 216 55% 7%;
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 216 30% 20%;
+    --input: 216 30% 25%;
+    --ring: 37 91% 55%;
+    --sidebar-background: 216 55% 5%;
+    --sidebar-foreground: 37 33% 93%;
+    --sidebar-primary: 37 91% 55%;
+    --sidebar-primary-foreground: 216 55% 7%;
+    --sidebar-accent: 216 40% 15%;
+    --sidebar-accent-foreground: 37 33% 93%;
+    --sidebar-border: 216 30% 15%;
+    --sidebar-ring: 37 91% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .fade-in {
+    animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Staggered card entrance — apply card-stagger-N class */
+  .card-stagger-0 { animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) forwards; opacity: 0; }
+  .card-stagger-1 { animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) 40ms forwards; opacity: 0; }
+  .card-stagger-2 { animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) 80ms forwards; opacity: 0; }
+  .card-stagger-3 { animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) 120ms forwards; opacity: 0; }
+  .card-stagger-4 { animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) 160ms forwards; opacity: 0; }
+  .card-stagger-5 { animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) 200ms forwards; opacity: 0; }
+  .card-stagger-6 { animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) 240ms forwards; opacity: 0; }
+  .card-stagger-7 { animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) 280ms forwards; opacity: 0; }
+  .card-stagger-8 { animation: fadeIn 0.25s cubic-bezier(0, 0, 0.2, 1) 320ms forwards; opacity: 0; }
+
+  /* Expiry / warning pulse — single cycle */
+  .pulse-once {
+    animation: pulseOnce 0.6s ease-in-out forwards;
+  }
+
+  @keyframes pulseOnce {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+  /* Route transition */
+  .page-enter {
+    animation: pageIn 0.18s cubic-bezier(0, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes pageIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Button active press */
+  .btn-press:active {
+    transform: scale(0.97);
+    transition: transform 60ms linear;
+  }
+
+  /* Form field focus — bottom border amber only */
+  .field-focus {
+    @apply border-b-2 border-foreground/20 border-t-0 border-l-0 border-r-0;
+    transition: border-color 150ms ease-out;
+  }
+  .field-focus:focus {
+    border-bottom-color: hsl(var(--amber));
+  }
+
+  /* Dropzone drag-over state via JS class */
+  .dropzone-active {
+    border-color: hsl(var(--amber)) !important;
+    background-color: #FDFAF4 !important;
+    transition: border-color 100ms ease-out, background-color 100ms ease-out;
+  }
+
+  .label-caps {
+    @apply text-[10px] uppercase tracking-[0.1em] font-bold;
+    color: hsl(var(--navy) / 0.5);
+  }
+
+  .nav-link {
+    @apply text-[11px] uppercase tracking-[0.15em] font-medium;
+  }
+}
