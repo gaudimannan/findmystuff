@@ -25,7 +25,7 @@ const LoginPage = () => {
 
     if (isForgotPassword) {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'http://localhost:8080/reset-password'
+        redirectTo: 'https://findmystuff-bu.vercel.app/reset-password'
       });
       if (error) {
         setAuthError(error.message);
