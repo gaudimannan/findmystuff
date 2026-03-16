@@ -243,7 +243,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-svh bg-background flex items-center justify-center p-6 page-enter">
-      <div className="w-full max-w-md bg-card border border-foreground/10 p-12 shadow-[20px_20px_0px_hsl(var(--navy)/0.05)]">
+      <div className="w-full max-w-md bg-card border border-foreground/10 p-6 md:p-12 shadow-[10px_10px_0px_hsl(var(--navy)/0.05)] md:shadow-[20px_20px_0px_hsl(var(--navy)/0.05)]">
         <div className="flex flex-col items-center mb-10">
           <div className="w-12 h-12 bg-secondary text-secondary-foreground flex items-center justify-center font-bold text-xl mb-6 rounded-sm">
             BU

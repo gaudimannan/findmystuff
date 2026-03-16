@@ -72,7 +72,7 @@ const FeedPage = () => {
             ))}
           </div>
           {/* Category chips — fill transition */}
-          <div className="flex gap-4 overflow-x-auto pb-2">
+          <div className="flex gap-4 overflow-x-auto pb-2 w-full md:w-auto hide-scrollbar snap-x">
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -100,14 +100,14 @@ const FeedPage = () => {
             <p className="text-muted-foreground text-sm">No items match this filter.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20 md:pb-0">
             {filtered.map((item, i) => {
               const daysLeft = Math.ceil((new Date(item.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
               
               return (
                 <Link to={`/item/${item.id}`} key={item.id} className={`group card-stagger-${i}`}>
                   <div className="bg-secondary border border-muted-foreground/20 rounded-sm transition-[border-color] duration-[120ms] hover:border-secondary overflow-hidden">
-                    <div className="aspect-[4/3] bg-secondary-foreground/5 flex items-center justify-center text-secondary-foreground/20 uppercase tracking-widest text-[10px] overflow-hidden">
+                    <div className="aspect-[3/2] md:aspect-[4/3] max-h-48 md:max-h-none bg-secondary-foreground/5 flex items-center justify-center text-secondary-foreground/20 uppercase tracking-widest text-[10px] overflow-hidden">
                       {item.image_url ? (
                         <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
                       ) : (
