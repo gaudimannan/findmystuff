@@ -5,51 +5,100 @@ import { supabase } from "../lib/supabase";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  
+  // 1: initial, 2: otp sent, 3: email verified
+  const [signupStep, setSignupStep] = useState(1);
+  const [emailVerified, setEmailVerified] = useState(false);
+  
   const [emailError, setEmailError] = useState("");
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [authError, setAuthError] = useState("");
-  const [success, setSuccess] = useState(false);
+  
   const [resetSent, setResetSent] = useState(false);
   const [resentVerification, setResentVerification] = useState(false);
   const navigate = useNavigate();
 
-  const handleAuth = async () => {
+  const handleSendOtp = async () => {
     setEmailError("");
     setNameError("");
     setPhoneError("");
     setAuthError("");
-    setSuccess(false);
-    setResentVerification(false);
 
-    if (isSignUp) {
-      let hasError = false;
-      
-      if (!firstName.trim() || !lastName.trim()) {
-        setNameError("Please enter your first and last name.");
-        hasError = true;
-      }
-      
-      const phoneRegex = /^\d{10}$/;
-      if (!phoneRegex.test(phoneNumber.trim())) {
-        setPhoneError("Please enter a valid 10-digit phone number.");
-        hasError = true;
-      }
-      
-      if (hasError) return;
+    let hasError = false;
+    
+    if (!firstName.trim() || !lastName.trim()) {
+      setNameError("Please enter your first and last name.");
+      hasError = true;
     }
+    
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phoneNumber.trim())) {
+      setPhoneError("Please enter a valid 10-digit phone number.");
+      hasError = true;
+    }
+    
+    if (hasError) return;
 
     if (!email.endsWith("@bennett.edu.in")) {
       setEmailError("Only Bennett emails are allowed.");
       return;
     }
 
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    
+    if (error) {
+      setAuthError(error.message);
+    } else {
+      setSignupStep(2);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setAuthError("");
+    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' });
+    
+    if (error) {
+      setAuthError("Invalid code. Try again.");
+    } else {
+      setEmailVerified(true);
+      setSignupStep(3);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setAuthError("");
+    setResentVerification(false);
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    
+    if (error) {
+      setAuthError(error.message);
+    } else {
+      setResentVerification(true);
+      setTimeout(() => setResentVerification(false), 3000);
+    }
+  };
+
+  const handleAuth = async () => {
+    setEmailError("");
+    setNameError("");
+    setPhoneError("");
+    setAuthError("");
+    setResentVerification(false);
+
     if (isForgotPassword) {
+      if (!email.endsWith("@bennett.edu.in")) {
+        setEmailError("Only Bennett emails are allowed.");
+        return;
+      }
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: 'https://findmystuff-bu.vercel.app/reset-password'
       });
@@ -62,10 +111,25 @@ const LoginPage = () => {
     }
 
     if (isSignUp) {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        setAuthError(error.message);
-      } else if (data.user) {
+      // Sign Up Button is only visible at Step 3
+      if (password !== confirmPassword) {
+        setAuthError("Passwords do not match.");
+        return;
+      }
+      if (password.length < 6) {
+        setAuthError("Password must be at least 6 characters.");
+        return;
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      
+      if (updateError) {
+        setAuthError(updateError.message);
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
         const { error: profileError } = await supabase
           .from('profiles')
           .update({ 
@@ -73,14 +137,18 @@ const LoginPage = () => {
             last_name: lastName.trim(),
             phone: phoneNumber.trim()
           })
-          .eq('id', data.user.id);
+          .eq('id', user.id);
           
         if (profileError) {
           console.error("Error updating profile:", profileError);
         }
-        setSuccess(true);
       }
+      navigate("/feed");
     } else {
+      if (!email.endsWith("@bennett.edu.in")) {
+        setEmailError("Only Bennett emails are allowed.");
+        return;
+      }
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       console.log(error);
       if (error) {
@@ -104,6 +172,21 @@ const LoginPage = () => {
     }
   };
 
+  const toggleMode = () => {
+    setIsSignUp(!isSignUp);
+    setIsForgotPassword(false);
+    setAuthError("");
+    setEmailError("");
+    setNameError("");
+    setPhoneError("");
+    setResentVerification(false);
+    setSignupStep(1);
+    setEmailVerified(false);
+    setOtp("");
+    setPassword("");
+    setConfirmPassword("");
+  };
+
   return (
     <div className="min-h-svh bg-background flex items-center justify-center p-6 page-enter">
       <div className="w-full max-w-md bg-card border border-foreground/10 p-12 shadow-[20px_20px_0px_hsl(var(--navy)/0.05)]">
@@ -114,21 +197,7 @@ const LoginPage = () => {
           <h1 className="font-serif text-3xl text-foreground">University Portal</h1>
         </div>
         
-        {success ? (
-          <div className="flex flex-col items-center justify-center space-y-4 py-8">
-            <p className="text-center">Verification email sent to {email}. Please check your inbox and click the link to activate your account.</p>
-            <button
-              onClick={() => {
-                setSuccess(false);
-                setIsSignUp(false);
-                setIsForgotPassword(false);
-              }}
-              className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Back to Sign In
-            </button>
-          </div>
-        ) : resetSent ? (
+        {resetSent ? (
           <div className="flex flex-col items-center justify-center space-y-4 py-8">
             <p className="text-center">Password reset link sent. Check your inbox.</p>
             <button
@@ -155,6 +224,7 @@ const LoginPage = () => {
                         className="bg-transparent field-focus outline-none py-2 font-sans text-foreground w-full"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
+                        readOnly={signupStep > 1}
                       />
                     </div>
                     <div className="flex flex-col gap-1.5 flex-1 min-w-0">
@@ -165,6 +235,7 @@ const LoginPage = () => {
                         className="bg-transparent field-focus outline-none py-2 font-sans text-foreground w-full"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
+                        readOnly={signupStep > 1}
                       />
                     </div>
                   </div>
@@ -175,60 +246,163 @@ const LoginPage = () => {
                     <input
                       type="tel"
                       placeholder="Enter 10-digit phone number"
-                      className="bg-transparent field-focus outline-none py-2 font-sans text-foreground"
+                      className="bg-transparent field-focus outline-none py-2 font-sans text-foreground w-full"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
+                      readOnly={signupStep > 1}
                     />
                     {phoneError && <p className="text-red-500 text-sm mt-1">{phoneError}</p>}
                   </div>
+
+                  <div className="flex flex-col gap-1.5 w-full">
+                    <label className="label-caps">Bennett email address</label>
+                    <div className="flex items-end gap-2">
+                      <div className="flex-1 min-w-0">
+                        <input
+                          type="email"
+                          placeholder="name@bennett.edu.in"
+                          className="bg-transparent field-focus outline-none py-2 font-sans text-foreground w-full"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          readOnly={signupStep > 1}
+                        />
+                      </div>
+                      {signupStep === 1 && (
+                        <button 
+                          onClick={handleSendOtp} 
+                          className="bg-primary text-primary-foreground text-[10px] uppercase tracking-widest font-bold px-3 py-2 rounded-sm whitespace-nowrap btn-press hover:brightness-90 transition-all"
+                        >
+                          Send OTP
+                        </button>
+                      )}
+                      {signupStep === 2 && !emailVerified && (
+                        <button 
+                          disabled 
+                          className="px-3 py-2 bg-muted text-muted-foreground text-[10px] uppercase tracking-widest font-bold rounded-sm whitespace-nowrap opacity-70"
+                        >
+                          Sent ✓
+                        </button>
+                      )}
+                      {emailVerified && (
+                        <div className="py-2 pr-2">
+                          <span className="text-green-500 text-xs font-bold whitespace-nowrap">
+                            Email verified ✓
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
+                  </div>
+
+                  {signupStep === 2 && !emailVerified && (
+                    <div className="flex flex-col gap-1.5 w-full mt-2">
+                      <label className="label-caps">VERIFICATION CODE</label>
+                      <input
+                        type="text"
+                        placeholder="Enter 8-digit code"
+                        maxLength={8}
+                        className="bg-transparent field-focus outline-none py-4 font-sans text-foreground text-center text-3xl tracking-[1em] w-full"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                      />
+                      <div className="mt-1">
+                        <button 
+                          onClick={handleResendOtp}
+                          className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Resend code
+                        </button>
+                        {resentVerification && (
+                          <span className="text-green-500 text-xs ml-2">Code resent.</span>
+                        )}
+                      </div>
+                      <button 
+                        onClick={handleVerifyOtp}
+                        className="w-full mt-4 bg-primary text-primary-foreground font-bold px-6 py-3 uppercase tracking-wider text-xs hover:brightness-90 transition-all duration-200 rounded-sm btn-press"
+                      >
+                        Verify OTP
+                      </button>
+                    </div>
+                  )}
+
+                  {signupStep === 3 && emailVerified && (
+                    <>
+                      <div className="flex flex-col gap-1.5 w-full pt-2">
+                        <label className="label-caps">PASSWORD</label>
+                        <input
+                          type="password"
+                          placeholder="Create a password"
+                          className="bg-transparent field-focus outline-none py-2 font-sans text-foreground w-full"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5 w-full">
+                        <label className="label-caps">CONFIRM PASSWORD</label>
+                        <input
+                          type="password"
+                          placeholder="Confirm your password"
+                          className="bg-transparent field-focus outline-none py-2 font-sans text-foreground w-full"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
-              <div className="flex flex-col gap-1.5 w-full">
-                <label className="label-caps">Bennett email address</label>
-                <input
-                  type="email"
-                  placeholder="name@bennett.edu.in"
-                  className="bg-transparent field-focus outline-none py-2 font-sans text-foreground"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
-              </div>
+              {/* Sign In / Forgot Password Forms */}
+              {!isSignUp && (
+                <>
+                  <div className="flex flex-col gap-1.5 w-full">
+                    <label className="label-caps">Bennett email address</label>
+                    <input
+                      type="email"
+                      placeholder="name@bennett.edu.in"
+                      className="bg-transparent field-focus outline-none py-2 font-sans text-foreground w-full"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                    {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
+                  </div>
 
-              {!isForgotPassword && (
-                <div className="flex flex-col gap-1.5 w-full">
-                  <label className="label-caps">Password</label>
-                  <input
-                    type="password"
-                    placeholder="Enter your password"
-                    className="bg-transparent field-focus outline-none py-2 font-sans text-foreground"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  {!isSignUp && (
-                    <button
-                      onClick={() => setIsForgotPassword(true)}
-                      className="text-right text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors mt-2"
-                    >
-                      Forgot password?
-                    </button>
+                  {!isForgotPassword && (
+                    <div className="flex flex-col gap-1.5 w-full">
+                      <label className="label-caps">Password</label>
+                      <input
+                        type="password"
+                        placeholder="Enter your password"
+                        className="bg-transparent field-focus outline-none py-2 font-sans text-foreground w-full"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <button
+                        onClick={() => setIsForgotPassword(true)}
+                        className="text-right text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors mt-2"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
                   )}
-                </div>
+                </>
               )}
             </div>
             
             <div className="w-full text-center">
-              <button 
-                onClick={handleAuth}
-                className="w-full mt-4 bg-primary text-primary-foreground font-bold px-6 py-3 uppercase tracking-wider text-xs hover:brightness-90 transition-all duration-200 rounded-sm btn-press"
-              >
-                {isForgotPassword ? "Send Reset Link" : isSignUp ? "Sign Up" : "Sign In"}
-              </button>
+              {(!isSignUp || (isSignUp && signupStep === 3)) && (
+                <button 
+                  onClick={handleAuth}
+                  className="w-full mt-4 bg-primary text-primary-foreground font-bold px-6 py-3 uppercase tracking-wider text-xs hover:brightness-90 transition-all duration-200 rounded-sm btn-press"
+                >
+                  {isForgotPassword ? "Send Reset Link" : isSignUp ? "Sign Up" : "Sign In"}
+                </button>
+              )}
+              
               {authError && (
                 <div className="mt-2 flex flex-col items-center">
                   <p className="text-red-500 text-sm">{authError}</p>
-                  {authError === "Please verify your email first. Check your inbox for the verification link." && (
+                  {!isSignUp && authError === "Please verify your email first. Check your inbox for the verification link." && (
                     <button 
                       onClick={handleResendVerification}
                       className="mt-2 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
@@ -236,7 +410,7 @@ const LoginPage = () => {
                       Resend verification email
                     </button>
                   )}
-                  {resentVerification && (
+                  {!isSignUp && resentVerification && (
                     <p className="text-green-500 text-sm mt-1">Verification email resent.</p>
                   )}
                 </div>
@@ -244,14 +418,7 @@ const LoginPage = () => {
               
               {!isForgotPassword ? (
                 <button 
-                  onClick={() => {
-                    setIsSignUp(!isSignUp);
-                    setAuthError("");
-                    setEmailError("");
-                    setNameError("");
-                    setPhoneError("");
-                    setResentVerification(false);
-                  }}
+                  onClick={toggleMode}
                   className="mt-4 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
