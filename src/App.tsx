@@ -9,6 +9,7 @@ import FeedPage from "./pages/FeedPage";
 import PostItemPage from "./pages/PostItemPage";
 import ItemDetailPage from "./pages/ItemDetailPage";
 import MyPostsPage from "./pages/MyPostsPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/post" element={<ProtectedRoute><PostItemPage /></ProtectedRoute>} />
           <Route path="/item/:id" element={<ProtectedRoute><ItemDetailPage /></ProtectedRoute>} />
           <Route path="/my-posts" element={<ProtectedRoute><MyPostsPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

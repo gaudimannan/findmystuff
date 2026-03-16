@@ -14,6 +14,7 @@ interface Item {
   created_at: string;
   expires_at: string;
   status: string;
+  user_id: string;
 }
 
 const ItemDetailPage = () => {
@@ -24,6 +25,7 @@ const ItemDetailPage = () => {
   const [claimLoading, setClaimLoading] = useState(false);
   const [claimError, setClaimError] = useState("");
   const [claimSuccess, setClaimSuccess] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -41,6 +43,11 @@ const ItemDetailPage = () => {
         .select('*')
         .eq('id', id)
         .single();
+        
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        setCurrentUserId(userData.user.id);
+      }
 
       if (fetchError || !data) {
         console.error("Error fetching item:", fetchError);
@@ -167,7 +174,7 @@ const ItemDetailPage = () => {
                 <p className="w-full text-center py-4 text-muted-foreground text-sm font-medium">
                   This item has been claimed.
                 </p>
-              ) : (
+              ) : currentUserId !== item.user_id ? (
                 <div className="w-full">
                   <button 
                     onClick={handleClaim}
@@ -183,7 +190,7 @@ const ItemDetailPage = () => {
                     <p className="text-red-500 text-sm mt-2 text-center">{claimError}</p>
                   )}
                 </div>
-              )}
+              ) : null}
               <button className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground self-center transition-colors duration-200">
                 Bump Post
               </button>

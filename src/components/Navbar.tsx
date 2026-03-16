@@ -31,9 +31,9 @@ const Navbar = () => (
         My Posts
       </RouterNavLink>
     </div>
-    <div className="w-8 h-8 bg-amber rounded-sm flex items-center justify-center text-secondary font-bold text-xs">
+    <Link to="/profile" className="w-8 h-8 bg-amber rounded-sm flex items-center justify-center text-secondary font-bold text-xs hover:brightness-110 transition-all">
       JD
-    </div>
+    </Link>
   </nav>
 );
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
@@ -26,6 +26,55 @@ const LoginPage = () => {
   const [resetSent, setResetSent] = useState(false);
   const [resentVerification, setResentVerification] = useState(false);
   const navigate = useNavigate();
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleOtpChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, '').slice(-1);
+    if (!digit && value !== '') return;
+
+    const newOtpArray = otp.split('');
+    while(newOtpArray.length < 6) newOtpArray.push('');
+    
+    newOtpArray[index] = digit;
+    const newOtp = newOtpArray.join('').slice(0, 6);
+    setOtp(newOtp);
+
+    if (digit && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      const newOtpArray = otp.split('');
+      while(newOtpArray.length < 6) newOtpArray.push('');
+
+      if (newOtpArray[index]) {
+        // clear current box
+        newOtpArray[index] = '';
+        setOtp(newOtpArray.join(''));
+      } else if (index > 0) {
+        // clear previous box and focus it
+        newOtpArray[index - 1] = '';
+        setOtp(newOtpArray.join(''));
+        otpRefs.current[index - 1]?.focus();
+      }
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pastedData) {
+      setOtp(pastedData);
+      const nextIndex = Math.min(pastedData.length, 5);
+      if (otpRefs.current[nextIndex]) {
+        otpRefs.current[nextIndex]?.focus();
+      } else if (otpRefs.current[5]) {
+         otpRefs.current[5]?.focus();
+      }
+    }
+  };
 
   const handleSendOtp = async () => {
     setEmailError("");
@@ -122,6 +171,7 @@ const LoginPage = () => {
       }
 
       const { error: updateError } = await supabase.auth.updateUser({ password });
+      console.log('updateUser result:', updateError);
       
       if (updateError) {
         setAuthError(updateError.message);
@@ -132,12 +182,16 @@ const LoginPage = () => {
       if (user) {
         const { error: profileError } = await supabase
           .from('profiles')
-          .update({ 
+          .upsert({ 
+            id: user.id,
+            email: user.email,
             first_name: firstName.trim(),
             last_name: lastName.trim(),
             phone: phoneNumber.trim()
-          })
-          .eq('id', user.id);
+          });
+          
+        console.log('upsert result:', profileError);
+        console.log('upsert data:', firstName, lastName, phoneNumber, user?.id, user?.email);
           
         if (profileError) {
           console.error("Error updating profile:", profileError);
@@ -297,14 +351,24 @@ const LoginPage = () => {
                   {signupStep === 2 && !emailVerified && (
                     <div className="flex flex-col gap-1.5 w-full mt-2">
                       <label className="label-caps">VERIFICATION CODE</label>
-                      <input
-                        type="text"
-                        placeholder="Enter 8-digit code"
-                        maxLength={8}
-                        className="bg-transparent field-focus outline-none py-4 font-sans text-foreground text-center text-3xl tracking-[1em] w-full"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      />
+                      <div className="flex gap-2 justify-center mt-2 w-full">
+                        {Array.from({ length: 6 }).map((_, index) => (
+                          <input
+                            key={index}
+                            ref={(el) => {
+                              otpRefs.current[index] = el;
+                            }}
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={1}
+                            className="w-10 h-12 text-center text-lg font-bold border border-foreground/20 rounded-sm bg-transparent text-foreground focus:border-amber focus:outline-none transition-colors duration-150"
+                            value={otp[index] || ''}
+                            onChange={(e) => handleOtpChange(index, e.target.value)}
+                            onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                            onPaste={handleOtpPaste}
+                          />
+                        ))}
+                      </div>
                       <div className="mt-1">
                         <button 
                           onClick={handleResendOtp}
@@ -316,6 +380,9 @@ const LoginPage = () => {
                           <span className="text-green-500 text-xs ml-2">Code resent.</span>
                         )}
                       </div>
+                      <p className="text-[10px] text-muted-foreground text-center mt-1">
+                        OTP may take up to 2 minutes to arrive.
+                      </p>
                       <button 
                         onClick={handleVerifyOtp}
                         className="w-full mt-4 bg-primary text-primary-foreground font-bold px-6 py-3 uppercase tracking-wider text-xs hover:brightness-90 transition-all duration-200 rounded-sm btn-press"
