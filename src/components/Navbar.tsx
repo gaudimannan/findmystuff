@@ -1,8 +1,56 @@
 import { NavLink as RouterNavLink, Link, useLocation } from "react-router-dom";
-import { Home, PlusSquare, List, User } from "lucide-react";
+import { Home, PlusSquare, List, User, Bell, MessageSquare } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
 
 const Navbar = () => {
   const location = useLocation();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { count } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact' })
+        .eq('user_id', user.id)
+        .eq('read', false);
+      
+      if (count !== null) setUnreadCount(count);
+    };
+
+    fetchUnread();
+    
+    // Fetch unread messages (received and unread)
+    const fetchUnreadMessages = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { count } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact' })
+        .eq('receiver_id', user.id)
+        .eq('read', false);
+      setHasUnreadMessages((count ?? 0) > 0);
+    };
+
+    fetchUnreadMessages();
+
+    // Subscribe to changes in notifications for current user
+    const channel = supabase
+      .channel('navbar-notifications')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
+        fetchUnread();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+        fetchUnreadMessages();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [location]);
 
   return (
   <>
@@ -35,10 +83,34 @@ const Navbar = () => {
         >
           My Posts
         </RouterNavLink>
+        <RouterNavLink
+          to="/chats"
+          className={({ isActive }) =>
+            isActive ? "text-amber" : "text-secondary-foreground/70 hover:text-amber transition-colors duration-200"
+          }
+        >
+          <span className="relative">
+            Messages
+            {hasUnreadMessages && (
+              <span className="absolute -top-1 -right-2 w-2 h-2 bg-red-500 rounded-full" />
+            )}
+          </span>
+        </RouterNavLink>
       </div>
-      <Link to="/profile" className="hidden md:flex w-8 h-8 bg-amber rounded-sm items-center justify-center text-secondary font-bold text-xs hover:brightness-110 transition-all">
-        JD
-      </Link>
+      <div className="flex items-center gap-4">
+        <Link 
+          to="/notifications" 
+          className={`relative p-2 rounded-full transition-colors ${location.pathname === '/notifications' ? 'text-amber' : 'text-secondary-foreground/70 hover:text-amber'}`}
+        >
+          <Bell size={20} />
+          {unreadCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-secondary" />
+          )}
+        </Link>
+        <Link to="/profile" className="hidden md:flex w-8 h-8 bg-amber rounded-sm items-center justify-center text-secondary font-bold text-xs hover:brightness-110 transition-all">
+          JD
+        </Link>
+      </div>
     </nav>
     
     {/* Mobile Bottom Tab Bar */}
@@ -63,6 +135,26 @@ const Navbar = () => {
       >
         <List size={20} />
         <span className="text-[10px] font-bold uppercase tracking-wider">My Posts</span>
+      </Link>
+      <Link
+        to="/chats"
+        className={`flex flex-col items-center gap-1 relative ${location.pathname === '/chats' ? "text-primary" : "text-secondary-foreground/60"}`}
+      >
+        <MessageSquare size={20} />
+        {hasUnreadMessages && (
+          <span className="absolute top-0 right-1/4 w-2 h-2 bg-red-500 rounded-full" />
+        )}
+        <span className="text-[10px] font-bold uppercase tracking-wider">Messages</span>
+      </Link>
+      <Link
+        to="/notifications"
+        className={`flex flex-col items-center gap-1 relative ${location.pathname === '/notifications' ? "text-primary" : "text-secondary-foreground/60"}`}
+      >
+        <Bell size={20} />
+        {unreadCount > 0 && (
+          <span className="absolute top-0 right-1/4 w-2 h-2 bg-red-50 rounded-full" />
+        )}
+        <span className="text-[10px] font-bold uppercase tracking-wider">Updates</span>
       </Link>
       <Link
         to="/profile"

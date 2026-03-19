@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { supabase } from "../lib/supabase";
 
@@ -138,6 +138,8 @@ const MyPostsPage = () => {
   const handleDelete = async (id: number) => {
     setDeletingId(id);
     
+    // Also delete any claims/notifications/messages related to this item
+    // Supabase cascade delete should handle this if configured, but we'll stick to item delete
     const { error } = await supabase
       .from('items')
       .delete()
@@ -151,6 +153,9 @@ const MyPostsPage = () => {
     
     setDeletingId(null);
   };
+
+  const navigate = useNavigate(); // Added useNavigate hook if not imported
+
 
   const hasPosts = posts.length > 0;
 
@@ -229,7 +234,7 @@ const MyPostsPage = () => {
                                 }`}
                                 disabled={!post.pending_claims_count || post.pending_claims_count === 0}
                               >
-                                View Claims ({post.pending_claims_count || 0})
+                                View Chats ({post.pending_claims_count || 0})
                               </button>
                             )}
                             <button 
@@ -252,35 +257,19 @@ const MyPostsPage = () => {
                             ) : claims.length === 0 ? (
                               <p className="text-sm text-muted-foreground">No pending claims.</p>
                             ) : (
-                              <div className="space-y-4">
+                             <div className="space-y-4">
                                 {claims.map(claim => (
                                   <div key={claim.id} className="flex items-center justify-between bg-background p-4 rounded border border-foreground/5 shadow-sm">
-                                    <div className="grid grid-cols-3 gap-6 flex-1 pr-8">
-                                      <div>
-                                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Claimant</p>
-                                        <p className="font-bold">{claim.profiles?.first_name ?? 'Unknown'} {claim.profiles?.last_name ?? ''}</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Email</p>
-                                        <p className="text-muted-foreground">{claim.profiles?.email ?? 'No email'}</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Phone</p>
-                                        <p className="text-muted-foreground">{claim.profiles?.phone ?? 'No phone'}</p>
-                                      </div>
+                                    <div className="flex-1">
+                                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Claimant</p>
+                                      <p className="font-bold">{claim.profiles?.first_name ?? 'Unknown'} {claim.profiles?.last_name ?? ''}</p>
                                     </div>
                                     <div className="flex gap-2">
                                       <button 
-                                        onClick={() => handleApproveClaim(claim.id, claim.item_id)}
-                                        className="bg-amber-500 text-white hover:bg-amber-600 text-xs px-4 py-2 rounded-sm transition-colors uppercase tracking-wider font-bold"
+                                        onClick={() => navigate(`/chat/${post.id}/${claim.claimant_id}`)}
+                                        className="bg-[hsl(var(--navy))] text-white hover:brightness-110 text-xs px-4 py-2 rounded-sm transition-all uppercase tracking-wider font-bold btn-press"
                                       >
-                                        Approve
-                                      </button>
-                                      <button 
-                                        onClick={() => handleRejectClaim(claim.id, claim.item_id)}
-                                        className="bg-transparent border border-red-500 text-red-500 hover:bg-red-50 text-xs px-4 py-2 rounded-sm transition-colors uppercase tracking-wider font-bold"
-                                      >
-                                        Reject
+                                        Chat to Verify
                                       </button>
                                     </div>
                                   </div>

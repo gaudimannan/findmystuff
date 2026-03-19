@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { supabase } from "../lib/supabase";
 
@@ -19,6 +19,7 @@ interface Item {
 
 const ItemDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [item, setItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -26,6 +27,9 @@ const ItemDetailPage = () => {
   const [claimError, setClaimError] = useState("");
   const [claimSuccess, setClaimSuccess] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [claimCount, setClaimCount] = useState(0);
+  const [firstClaimantId, setFirstClaimantId] = useState<string | null>(null);
+  const [userHasClaim, setUserHasClaim] = useState(false);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -54,6 +58,32 @@ const ItemDetailPage = () => {
         setError(true);
       } else {
         setItem(data as Item);
+
+        // Fetch claim info for messaging
+        const { data: claimsData, count } = await supabase
+          .from('claims')
+          .select('claimant_id', { count: 'exact' })
+          .eq('item_id', id)
+          .order('created_at', { ascending: true });
+
+        if (count) setClaimCount(count);
+        if (claimsData && claimsData.length > 0) {
+          setFirstClaimantId(claimsData[0].claimant_id);
+        }
+
+        // Check if current user has a claim
+        if (userData?.user) {
+          const { data: userClaim } = await supabase
+            .from('claims')
+            .select('id')
+            .eq('item_id', id)
+            .eq('claimant_id', userData.user.id)
+            .maybeSingle();
+          
+          if (userClaim) {
+            setUserHasClaim(true);
+          }
+        }
       }
       
       setLoading(false);
@@ -77,17 +107,27 @@ const ItemDetailPage = () => {
       return;
     }
 
-    const { error: claimError } = await supabase.from('claims').insert({
+    const { data: newClaim, error: claimError } = await supabase.from('claims').insert({
       item_id: item.id,
       claimant_id: user.id,
       status: 'pending'
-    });
+    }).select().single();
 
     if (claimError) {
       setClaimError(claimError.message);
       setClaimLoading(false);
       return;
     }
+
+    // Notify the poster
+    await supabase.from('notifications').insert({
+      user_id: item.user_id,
+      type: 'claim',
+      item_id: item.id,
+      claim_id: newClaim.id,
+      from_user_id: user.id,
+      read: false
+    });
 
     const { error: updateError } = await supabase
       .from('items')
@@ -98,6 +138,7 @@ const ItemDetailPage = () => {
       setClaimError(updateError.message);
     } else {
       setClaimSuccess(true);
+      setUserHasClaim(true);
       setItem({ ...item, status: 'claimed' });
     }
     
@@ -170,27 +211,60 @@ const ItemDetailPage = () => {
             </div>
 
             <div className="flex flex-col gap-4">
-              {item.status.toLowerCase() === 'claimed' ? (
+              {item.status.toLowerCase() === 'claimed' && !userHasClaim && currentUserId !== item.user_id ? (
                 <p className="w-full text-center py-4 text-muted-foreground text-sm font-medium">
                   This item has been claimed.
                 </p>
               ) : currentUserId !== item.user_id ? (
-                <div className="w-full">
-                  <button 
-                    onClick={handleClaim}
-                    disabled={claimLoading}
-                    className="w-full py-4 border-2 border-foreground text-foreground font-bold uppercase tracking-wider text-xs hover:bg-secondary hover:text-secondary-foreground transition-colors duration-200 rounded-sm btn-press disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {claimLoading ? "Submitting..." : "Claim This Item"}
-                  </button>
+                <div className="w-full flex flex-col gap-4">
+                  {!userHasClaim ? (
+                    <button 
+                      onClick={handleClaim}
+                      disabled={claimLoading}
+                      className="w-full py-4 border-2 border-foreground text-foreground font-bold uppercase tracking-wider text-xs hover:bg-secondary hover:text-secondary-foreground transition-colors duration-200 rounded-sm btn-press disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {claimLoading ? "Submitting..." : "Claim This Item"}
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => {
+                        if (!item?.id || !item.user_id) return;
+                        console.log('navigating to chat with:', item.id, item.user_id);
+                        navigate(`/chat/${item.id}/${item.user_id}`);
+                      }}
+                      className="w-full py-4 bg-primary text-primary-foreground font-bold uppercase tracking-wider text-xs hover:brightness-90 transition-all duration-200 rounded-sm btn-press"
+                    >
+                      Message Poster
+                    </button>
+                  )}
                   {claimSuccess && (
-                    <p className="text-sm mt-2 text-center">Claim submitted. The poster will be notified.</p>
+                    <p className="text-sm mt-2 text-center text-green-600 font-medium">Claim submitted! You can now message the poster.</p>
                   )}
                   {claimError && (
                     <p className="text-red-500 text-sm mt-2 text-center">{claimError}</p>
                   )}
                 </div>
-              ) : null}
+              ) : (
+                <div className="w-full flex flex-col gap-4">
+                  {claimCount > 0 ? (
+                    <button
+                      onClick={() => {
+                        if (!item?.id || !firstClaimantId) return;
+                        console.log('navigating to chat with:', item.id, firstClaimantId);
+                        navigate(`/chat/${item.id}/${firstClaimantId}`);
+                      }}
+                      className="w-full py-4 border-2 border-[hsl(var(--navy))] text-[hsl(var(--navy))] font-bold uppercase tracking-wider text-xs hover:bg-[hsl(var(--navy))] hover:text-white transition-colors duration-200 rounded-sm btn-press"
+                    >
+                      View Messages
+                    </button>
+                  ) : (
+                    <p className="w-full text-center py-4 text-muted-foreground text-sm font-medium">
+                      Wait for a claim to message the person.
+                    </p>
+                  )}
+                </div>
+              )}
+              
               <button className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground self-center transition-colors duration-200">
                 Bump Post
               </button>

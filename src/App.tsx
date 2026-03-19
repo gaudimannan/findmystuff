@@ -10,6 +10,9 @@ import PostItemPage from "./pages/PostItemPage";
 import ItemDetailPage from "./pages/ItemDetailPage";
 import MyPostsPage from "./pages/MyPostsPage";
 import ProfilePage from "./pages/ProfilePage";
+import ChatPage from "./pages/ChatPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import ChatsPage from "./pages/ChatsPage";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
@@ -43,6 +46,9 @@ const App = () => (
           <Route path="/item/:id" element={<ProtectedRoute><ItemDetailPage /></ProtectedRoute>} />
           <Route path="/my-posts" element={<ProtectedRoute><MyPostsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/chat/:itemId/:otherUserId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+          <Route path="/chats" element={<ProtectedRoute><ChatsPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
