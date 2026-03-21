@@ -17,8 +17,11 @@ const PostItemPage = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showUploadSheet, setShowUploadSheet] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const uploadImage = async (file: File) => {
     const fileName = `${Date.now()}-${file.name}`;
@@ -52,6 +55,15 @@ const PostItemPage = () => {
     const file = e.target.files?.[0];
     if (file) {
       await uploadImage(file);
+    }
+    setShowUploadSheet(false);
+  };
+
+  const handleDropzoneClick = () => {
+    if (window.innerWidth < 768) {
+      setShowUploadSheet(true);
+    } else {
+      fileInputRef.current?.click();
     }
   };
 
@@ -96,7 +108,7 @@ const PostItemPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
           {/* Image upload */}
           <div
-            onClick={() => fileInputRef.current?.click()}
+            onClick={handleDropzoneClick}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -108,6 +120,21 @@ const PostItemPage = () => {
               type="file" 
               className="hidden" 
               ref={fileInputRef} 
+              onChange={handleFileSelect} 
+              accept="image/*" 
+            />
+            <input 
+              type="file" 
+              className="hidden" 
+              ref={cameraInputRef} 
+              onChange={handleFileSelect} 
+              accept="image/*" 
+              capture="environment" 
+            />
+            <input 
+              type="file" 
+              className="hidden" 
+              ref={galleryInputRef} 
               onChange={handleFileSelect} 
               accept="image/*" 
             />
@@ -217,6 +244,40 @@ const PostItemPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Mobile Upload Bottom Sheet */}
+      {showUploadSheet && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setShowUploadSheet(false)}
+          />
+          <div className="relative w-full max-w-md bg-[hsl(var(--navy))] rounded-t-lg p-6 pb-8 space-y-3 animate-in slide-in-from-bottom duration-200">
+            <button
+              onClick={() => {
+                cameraInputRef.current?.click();
+              }}
+              className="w-full bg-primary text-primary-foreground font-bold py-3.5 uppercase tracking-wider text-xs rounded-sm btn-press hover:brightness-90 transition-all"
+            >
+              📷 Take Photo
+            </button>
+            <button
+              onClick={() => {
+                galleryInputRef.current?.click();
+              }}
+              className="w-full border border-[hsl(var(--off-white))] text-[hsl(var(--off-white))] font-bold py-3.5 uppercase tracking-wider text-xs rounded-sm btn-press hover:bg-white/10 transition-all"
+            >
+              🖼 Choose from Gallery
+            </button>
+            <button
+              onClick={() => setShowUploadSheet(false)}
+              className="w-full text-center text-[hsl(var(--off-white))] text-xs uppercase tracking-widest font-medium pt-2 opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
