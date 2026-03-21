@@ -186,8 +186,7 @@
   }
 
   .label-caps {
-    @apply text-[10px] uppercase tracking-[0.1em] font-bold;
-    color: hsl(var(--navy) / 0.5);
+    @apply text-[10px] uppercase tracking-[0.1em] font-bold text-muted-foreground;
   }
 
   .nav-link {

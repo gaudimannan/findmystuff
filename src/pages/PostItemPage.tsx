@@ -287,7 +287,7 @@ const PostItemPage = () => {
             className="absolute inset-0 bg-black/60"
             onClick={() => setShowUploadSheet(false)}
           />
-          <div className="relative w-full max-w-md bg-[hsl(var(--navy))] rounded-t-lg p-6 pb-8 space-y-3 sheet-enter">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-t-lg p-6 pb-8 space-y-3 sheet-enter">
             <button
               onClick={() => {
                 cameraInputRef.current?.click();
@@ -300,13 +300,13 @@ const PostItemPage = () => {
               onClick={() => {
                 galleryInputRef.current?.click();
               }}
-              className="w-full border border-[hsl(var(--off-white))] text-[hsl(var(--off-white))] font-bold py-3.5 uppercase tracking-wider text-xs rounded-sm btn-press hover:bg-white/10 transition-all"
+              className="w-full border border-foreground text-foreground font-bold py-3.5 uppercase tracking-wider text-xs rounded-sm btn-press hover:bg-muted transition-all"
             >
               🖼 Choose from Gallery
             </button>
             <button
               onClick={() => setShowUploadSheet(false)}
-              className="w-full text-center text-[hsl(var(--off-white))] text-xs uppercase tracking-widest font-medium pt-2 opacity-60 hover:opacity-100 transition-opacity"
+              className="w-full text-center text-muted-foreground hover:text-foreground text-xs uppercase tracking-widest font-medium pt-2 transition-colors"
             >
               Cancel
             </button>
@@ -321,11 +321,11 @@ const PostItemPage = () => {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => { setShowMatchModal(false); navigate("/feed"); }}
           />
-          <div className="relative bg-[hsl(var(--navy))] w-full max-w-sm p-8 rounded-sm border border-foreground/10 shadow-2xl modal-enter">
-            <h2 className="font-serif text-2xl text-[hsl(var(--off-white))] text-center mb-2">
+          <div className="relative bg-card w-full max-w-sm p-8 rounded-sm border border-border shadow-2xl modal-enter">
+            <h2 className="font-serif text-2xl text-foreground text-center mb-2">
               🎯 Possible Match Found!
             </h2>
-            <p className="text-center text-[hsl(var(--off-white))]/70 text-sm mb-6">
+            <p className="text-center text-muted-foreground text-sm mb-6">
               We found {matchedItems.length} possible match{matchedItems.length > 1 ? 'es' : ''} for your item.
             </p>
 
@@ -334,10 +334,10 @@ const PostItemPage = () => {
                 <button
                   key={item.id}
                   onClick={() => { setShowMatchModal(false); navigate(`/item/${item.id}`); }}
-                  className="w-full text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-sm p-4 transition-colors"
+                  className="w-full text-left bg-muted/50 hover:bg-muted border border-border rounded-sm p-4 transition-colors"
                 >
-                  <p className="text-[hsl(var(--off-white))] font-bold text-sm">{item.title}</p>
-                  <p className="text-[hsl(var(--off-white))]/50 text-xs mt-1 uppercase tracking-widest">{item.location}</p>
+                  <p className="text-foreground font-bold text-sm">{item.title}</p>
+                  <p className="text-muted-foreground text-xs mt-1 uppercase tracking-widest">{item.location}</p>
                 </button>
               ))}
             </div>
