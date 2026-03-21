@@ -18,6 +18,10 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const queryClient = new QueryClient();
 
+// Apply theme on load (default: dark)
+const savedTheme = localStorage.getItem('theme') ?? 'dark';
+document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useAuth();
 

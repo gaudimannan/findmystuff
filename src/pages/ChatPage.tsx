@@ -257,7 +257,7 @@ const ChatPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans">
+    <div className="min-h-screen bg-background flex flex-col font-sans page-enter">
       <Navbar />
       
       {/* Header */}
@@ -286,7 +286,7 @@ const ChatPage = () => {
         </div>
 
         {isPoster && claimStatus === 'pending' && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button 
               onClick={handleAccept}
               className="bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm hover:brightness-90 transition-all btn-press"
@@ -359,7 +359,7 @@ const ChatPage = () => {
       )}
 
       {/* Input */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--navy))] border-t border-white/10 px-4 py-3 z-40">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(var(--navy))] border-t border-white/10 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="max-w-4xl mx-auto flex items-center gap-3">
           <input
             type="text"
@@ -372,7 +372,7 @@ const ChatPage = () => {
           <button
             onClick={handleSend}
             disabled={!newMessage.trim() || sending}
-            className="rounded-full w-10 h-10 flex items-center justify-center bg-primary text-[hsl(var(--navy))] btn-press hover:brightness-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            className="rounded-full w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center bg-primary text-[hsl(var(--navy))] btn-press hover:brightness-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           >
             <Send size={18} />
           </button>

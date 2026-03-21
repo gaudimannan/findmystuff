@@ -84,7 +84,7 @@ const ProfilePage = () => {
     <div className="min-h-screen bg-background font-sans flex flex-col page-enter">
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center p-6 pb-20">
-        <div className="w-full max-w-md bg-secondary/5 border border-foreground/10 p-10 md:p-12 rounded-sm relative">
+        <div className="w-full max-w-md bg-secondary/5 border border-foreground/10 p-6 md:p-12 rounded-sm relative">
           
           {/* Avatar */}
           <div className="w-24 h-24 rounded-full bg-[hsl(var(--navy))] flex items-center justify-center text-amber text-4xl font-bold mx-auto mb-6 shadow-md border-4 border-background">

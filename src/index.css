@@ -52,33 +52,37 @@
   }
 
   .dark {
-    --background: 216 55% 7%;
-    --foreground: 37 33% 93%;
-    --card: 216 40% 12%;
-    --card-foreground: 37 33% 93%;
-    --popover: 216 40% 12%;
-    --popover-foreground: 37 33% 93%;
-    --primary: 37 91% 55%;
-    --primary-foreground: 216 55% 7%;
-    --secondary: 37 33% 93%;
-    --secondary-foreground: 216 55% 7%;
-    --muted: 216 30% 20%;
-    --muted-foreground: 216 15% 60%;
-    --accent: 37 91% 55%;
-    --accent-foreground: 216 55% 7%;
+    --background: 222 15% 11%;
+    --foreground: 37 20% 88%;
+    --card: 222 15% 15%;
+    --card-foreground: 37 20% 88%;
+    --popover: 222 15% 15%;
+    --popover-foreground: 37 20% 88%;
+    --primary: 37 85% 50%;
+    --primary-foreground: 222 15% 11%;
+    --secondary: 222 15% 20%;
+    --secondary-foreground: 37 20% 88%;
+    --muted: 222 15% 18%;
+    --muted-foreground: 37 10% 55%;
+    --accent: 37 85% 50%;
+    --accent-foreground: 222 15% 11%;
     --destructive: 0 60% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 216 30% 20%;
-    --input: 216 30% 25%;
-    --ring: 37 91% 55%;
-    --sidebar-background: 216 55% 5%;
-    --sidebar-foreground: 37 33% 93%;
-    --sidebar-primary: 37 91% 55%;
-    --sidebar-primary-foreground: 216 55% 7%;
-    --sidebar-accent: 216 40% 15%;
-    --sidebar-accent-foreground: 37 33% 93%;
-    --sidebar-border: 216 30% 15%;
-    --sidebar-ring: 37 91% 55%;
+    --border: 222 15% 22%;
+    --input: 222 15% 20%;
+    --ring: 37 85% 50%;
+    --navy: 222 15% 11%;
+    --amber: 37 85% 50%;
+    --off-white: 37 20% 88%;
+    --navy-light: 222 15% 22%;
+    --sidebar-background: 222 15% 9%;
+    --sidebar-foreground: 37 20% 88%;
+    --sidebar-primary: 37 85% 50%;
+    --sidebar-primary-foreground: 222 15% 11%;
+    --sidebar-accent: 222 15% 18%;
+    --sidebar-accent-foreground: 37 20% 88%;
+    --sidebar-border: 222 15% 18%;
+    --sidebar-ring: 37 85% 50%;
   }
 }
 
@@ -131,12 +135,32 @@
 
   /* Route transition */
   .page-enter {
-    animation: pageIn 0.18s cubic-bezier(0, 0, 0.2, 1) forwards;
+    animation: pageIn 0.2s cubic-bezier(0, 0, 0.2, 1) forwards;
   }
 
   @keyframes pageIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Modal entrance */
+  .modal-enter {
+    animation: modalIn 0.2s cubic-bezier(0, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* Bottom sheet entrance */
+  .sheet-enter {
+    animation: sheetIn 0.25s cubic-bezier(0, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes sheetIn {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
   }
 
   /* Button active press */
@@ -181,4 +205,60 @@
     0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
     30% { opacity: 1; transform: translateY(-4px); }
   }
+
+  /* Hide scrollbar for filter chips */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Dark mode toggle switch */
+.switch {
+  font-size: 12px;
+  position: relative;
+  display: inline-block;
+  width: 3.5em;
+  height: 2em;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #0A1628;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2em;
+  width: 2em;
+  inset: 0;
+  background-color: #F5A623;
+  border-radius: 50px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.switch input:checked + .slider {
+  background: #F5A623;
+}
+.switch input:focus + .slider {
+  box-shadow: 0 0 1px #F5A623;
+}
+.switch input:checked + .slider:before {
+  transform: translateX(1.6em);
+  background-color: #1a1f2e;
 }

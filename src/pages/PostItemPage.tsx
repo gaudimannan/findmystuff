@@ -287,7 +287,7 @@ const PostItemPage = () => {
             className="absolute inset-0 bg-black/60"
             onClick={() => setShowUploadSheet(false)}
           />
-          <div className="relative w-full max-w-md bg-[hsl(var(--navy))] rounded-t-lg p-6 pb-8 space-y-3 animate-in slide-in-from-bottom duration-200">
+          <div className="relative w-full max-w-md bg-[hsl(var(--navy))] rounded-t-lg p-6 pb-8 space-y-3 sheet-enter">
             <button
               onClick={() => {
                 cameraInputRef.current?.click();
@@ -321,7 +321,7 @@ const PostItemPage = () => {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => { setShowMatchModal(false); navigate("/feed"); }}
           />
-          <div className="relative bg-[hsl(var(--navy))] w-full max-w-sm p-8 rounded-sm border border-foreground/10 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="relative bg-[hsl(var(--navy))] w-full max-w-sm p-8 rounded-sm border border-foreground/10 shadow-2xl modal-enter">
             <h2 className="font-serif text-2xl text-[hsl(var(--off-white))] text-center mb-2">
               🎯 Possible Match Found!
             </h2>

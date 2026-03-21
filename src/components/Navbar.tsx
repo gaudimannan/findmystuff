@@ -7,6 +7,15 @@ const Navbar = () => {
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const [isDark, setIsDark] = useState(
+    () => localStorage.getItem('theme') !== 'light'
+  );
+
+  const handleThemeToggle = (checked: boolean) => {
+    setIsDark(checked);
+    document.documentElement.classList.toggle('dark', checked);
+    localStorage.setItem('theme', checked ? 'dark' : 'light');
+  };
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -97,7 +106,7 @@ const Navbar = () => {
           </span>
         </RouterNavLink>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 overflow-visible">
         <Link 
           to="/notifications" 
           className={`relative p-2 rounded-full transition-colors ${location.pathname === '/notifications' ? 'text-amber' : 'text-secondary-foreground/70 hover:text-amber'}`}
@@ -107,6 +116,14 @@ const Navbar = () => {
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-secondary" />
           )}
         </Link>
+        <label className="switch hidden md:inline-block align-middle">
+          <input 
+            type="checkbox" 
+            checked={isDark}
+            onChange={(e) => handleThemeToggle(e.target.checked)}
+          />
+          <span className="slider"></span>
+        </label>
         <Link to="/profile" className="hidden md:flex w-8 h-8 bg-amber rounded-sm items-center justify-center text-secondary font-bold text-xs hover:brightness-110 transition-all">
           JD
         </Link>
@@ -146,16 +163,7 @@ const Navbar = () => {
         )}
         <span className="text-[10px] font-bold uppercase tracking-wider">Messages</span>
       </Link>
-      <Link
-        to="/notifications"
-        className={`flex flex-col items-center gap-1 relative ${location.pathname === '/notifications' ? "text-primary" : "text-secondary-foreground/60"}`}
-      >
-        <Bell size={20} />
-        {unreadCount > 0 && (
-          <span className="absolute top-0 right-1/4 w-2 h-2 bg-red-50 rounded-full" />
-        )}
-        <span className="text-[10px] font-bold uppercase tracking-wider">Updates</span>
-      </Link>
+
       <Link
         to="/profile"
         className={`flex flex-col items-center gap-1 ${location.pathname === '/profile' ? "text-primary" : "text-secondary-foreground/60"}`}

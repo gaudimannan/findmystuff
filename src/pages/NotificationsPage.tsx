@@ -86,7 +86,7 @@ const NotificationsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans">
+    <div className="min-h-screen bg-background flex flex-col font-sans page-enter">
       <Navbar />
       
       <main className="flex-1 max-w-2xl w-full mx-auto px-6 py-12 pb-24 md:pb-12">

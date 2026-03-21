@@ -129,7 +129,7 @@ const ChatsPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background font-sans">
+    <div className="min-h-screen bg-background font-sans page-enter">
       <Navbar />
 
       <main className="max-w-2xl mx-auto px-4 md:px-8 py-12 pb-28 md:pb-12">
