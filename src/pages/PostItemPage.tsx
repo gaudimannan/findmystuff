@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { supabase } from "../lib/supabase";
+import { findMatches } from "../lib/gemini";
 
 const locationOptions = ["Library", "Block A", "Block B", "Cafeteria", "Sports Complex", "Main Gate", "Other"];
 const categoryOptions = ["Keys", "ID Card", "Laptop", "Earbuds", "Bag", "Charger", "Other"];
@@ -18,6 +19,8 @@ const PostItemPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showUploadSheet, setShowUploadSheet] = useState(false);
+  const [matchedItems, setMatchedItems] = useState<any[]>([]);
+  const [showMatchModal, setShowMatchModal] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -96,6 +99,38 @@ const PostItemPage = () => {
       setError(insertError.message);
       setLoading(false);
     } else {
+      // Scan for AI matches
+      try {
+        const oppositeType = itemType === 'Lost' ? 'Found' : 'Lost';
+        const { data: existingItems } = await supabase
+          .from('items')
+          .select('id, title, description, category, location')
+          .eq('type', oppositeType)
+          .eq('status', 'active')
+          .limit(20);
+
+        if (existingItems && existingItems.length > 0) {
+          const matchIndices = await findMatches(
+            { title, description, category, location, type: itemType },
+            existingItems
+          );
+
+          if (matchIndices.length > 0) {
+            const matched = matchIndices
+              .filter(i => i >= 0 && i < existingItems.length)
+              .map(i => existingItems[i]);
+            if (matched.length > 0) {
+              setMatchedItems(matched);
+              setShowMatchModal(true);
+              setLoading(false);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('AI match error:', err);
+      }
+
       navigate("/feed");
     }
   };
@@ -274,6 +309,44 @@ const PostItemPage = () => {
               className="w-full text-center text-[hsl(var(--off-white))] text-xs uppercase tracking-widest font-medium pt-2 opacity-60 hover:opacity-100 transition-opacity"
             >
               Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* AI Match Modal */}
+      {showMatchModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => { setShowMatchModal(false); navigate("/feed"); }}
+          />
+          <div className="relative bg-[hsl(var(--navy))] w-full max-w-sm p-8 rounded-sm border border-foreground/10 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h2 className="font-serif text-2xl text-[hsl(var(--off-white))] text-center mb-2">
+              🎯 Possible Match Found!
+            </h2>
+            <p className="text-center text-[hsl(var(--off-white))]/70 text-sm mb-6">
+              We found {matchedItems.length} possible match{matchedItems.length > 1 ? 'es' : ''} for your item.
+            </p>
+
+            <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
+              {matchedItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => { setShowMatchModal(false); navigate(`/item/${item.id}`); }}
+                  className="w-full text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-sm p-4 transition-colors"
+                >
+                  <p className="text-[hsl(var(--off-white))] font-bold text-sm">{item.title}</p>
+                  <p className="text-[hsl(var(--off-white))]/50 text-xs mt-1 uppercase tracking-widest">{item.location}</p>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => { setShowMatchModal(false); navigate("/feed"); }}
+              className="w-full bg-primary text-primary-foreground font-bold py-3 uppercase tracking-wider text-xs rounded-sm btn-press hover:brightness-90 transition-all"
+            >
+              Continue to Feed
             </button>
           </div>
         </div>
