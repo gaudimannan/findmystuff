@@ -169,4 +169,16 @@
   .nav-link {
     @apply text-[11px] uppercase tracking-[0.15em] font-medium;
   }
+
+  .typing-dot {
+    display: inline-block;
+    animation: typingBounce 1s infinite;
+    font-size: 1.2rem;
+    line-height: 0;
+  }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-4px); }
+  }
 }

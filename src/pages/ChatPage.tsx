@@ -39,7 +39,12 @@ const ChatPage = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [otherIsTyping, setOtherIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const setMessagesRef = useRef(setMessages);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  useEffect(() => { setMessagesRef.current = setMessages; }, [setMessages]);
 
   useEffect(() => {
     const init = async () => {
@@ -110,7 +115,8 @@ const ChatPage = () => {
               .single();
 
             if (fullMsg) {
-              setMessages(prev => {
+              console.log('adding message to state:', fullMsg.id);
+              setMessagesRef.current(prev => {
                 if (prev.find(m => m.id === fullMsg.id)) return prev;
                 return [...prev, fullMsg];
               });
@@ -121,8 +127,24 @@ const ChatPage = () => {
 
       console.log('subscribed to channel:', `chat-${itemId}`)
 
+      // Presence channel for typing indicator
+      const presenceChannel = supabase.channel(`presence-${itemId}`);
+      presenceChannelRef.current = presenceChannel;
+
+      presenceChannel.on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const others = Object.values(state)
+          .flat()
+          .filter((p: any) => p.userId !== user.id);
+        setOtherIsTyping(others.some((p: any) => p.typing));
+      });
+
+      presenceChannel.subscribe();
+
       return () => {
         supabase.removeChannel(channel);
+        supabase.removeChannel(presenceChannel);
+        presenceChannelRef.current = null;
       };
     };
 
@@ -133,11 +155,24 @@ const ChatPage = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleTyping = (value: string) => {
+    setNewMessage(value);
+    if (!currentUserId || !presenceChannelRef.current) return;
+    presenceChannelRef.current.track({ typing: true, userId: currentUserId });
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      presenceChannelRef.current?.track({ typing: false, userId: currentUserId });
+    }, 2000);
+  };
+
   const handleSend = async () => {
     if (!newMessage.trim() || !currentUserId || !itemId || !otherUserId || sending) return;
     setSending(true);
     const content = newMessage.trim();
     setNewMessage("");
+    // Stop typing indicator on send
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    presenceChannelRef.current?.track({ typing: false, userId: currentUserId });
 
     console.log('sending:', content, 'from:', currentUserId, 'to:', otherUserId, 'item:', itemId)
     const { data, error } = await supabase
@@ -152,16 +187,21 @@ const ChatPage = () => {
       .single();
     console.log('message sent, data:', data, 'error:', error)
 
-    if (!error) {
-      // Optimistically add message to state immediately
-      setMessages(prev => [...prev, {
-        id: Date.now(),
-        content,
-        sender_id: currentUserId,
-        receiver_id: otherUserId!,
-        item_id: Number(itemId),
-        created_at: new Date().toISOString(),
-      } as any]);
+    if (error) {
+      console.error('Failed to send message:', error);
+    } else if (data) {
+      const { data: sentMsg } = await supabase
+        .from('messages')
+        .select('*, profiles:sender_id(first_name, last_name)')
+        .eq('id', data.id)
+        .single();
+
+      if (sentMsg) {
+        setMessages(prev => {
+          if (prev.find(m => m.id === sentMsg.id)) return prev;
+          return [...prev, sentMsg];
+        });
+      }
     }
 
     setSending(false);
@@ -304,24 +344,37 @@ const ChatPage = () => {
         <div ref={bottomRef} />
       </main>
 
+      {/* Typing indicator */}
+      {otherIsTyping && (
+        <div className="fixed bottom-[calc(3.5rem+1px)] left-0 right-0 z-40">
+          <div className="max-w-4xl mx-auto px-6 py-2 flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">
+              {otherUser?.first_name} is typing
+            </span>
+            <span className="typing-dot" style={{ animationDelay: '0ms' }}>.</span>
+            <span className="typing-dot" style={{ animationDelay: '150ms' }}>.</span>
+            <span className="typing-dot" style={{ animationDelay: '300ms' }}>.</span>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
-      <div className="fixed bottom-0 left-0 right-0 bg-secondary border-t border-foreground/10 px-4 md:px-8 py-4 z-40">
-        <div className="max-w-4xl mx-auto flex gap-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--navy))] border-t border-white/10 px-4 py-3 z-40">
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => handleTyping(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Write a message..."
-            className="flex-1 bg-background text-foreground placeholder:text-muted-foreground border-b border-foreground/10 focus:border-primary outline-none py-2 text-sm transition-colors"
+            className="flex-1 rounded-full bg-card text-foreground placeholder:text-muted-foreground border border-foreground/10 focus:border-primary outline-none px-5 py-3 text-sm transition-colors"
           />
           <button
             onClick={handleSend}
             disabled={!newMessage.trim() || sending}
-            className="bg-primary text-primary-foreground px-4 py-2 text-[10px] uppercase tracking-widest font-bold rounded-sm btn-press hover:brightness-90 transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+            className="rounded-full w-10 h-10 flex items-center justify-center bg-primary text-[hsl(var(--navy))] btn-press hover:brightness-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           >
-            <Send size={12} />
-            Send
+            <Send size={18} />
           </button>
         </div>
       </div>
