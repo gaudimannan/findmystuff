@@ -1,12 +1,14 @@
-import { NavLink as RouterNavLink, Link, useLocation } from "react-router-dom";
-import { Home, PlusSquare, List, User, Bell, MessageSquare } from "lucide-react";
+import { NavLink as RouterNavLink, Link, useLocation, useNavigate } from "react-router-dom";
+import { Home, PlusSquare, List, User, Bell, MessageSquare, ShieldCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isDark, setIsDark] = useState(
     () => localStorage.getItem('theme') !== 'light'
   );
@@ -46,6 +48,19 @@ const Navbar = () => {
     };
 
     fetchUnreadMessages();
+
+    // Fetch admin status
+    const fetchAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+      setIsAdmin(profile?.is_admin ?? false);
+    };
+    fetchAdmin();
 
     // Subscribe to changes in notifications for current user
     const channel = supabase
@@ -116,6 +131,15 @@ const Navbar = () => {
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-secondary" />
           )}
         </Link>
+        {isAdmin && (
+          <button
+            onClick={() => navigate('/admin')}
+            className="relative p-2 rounded-full transition-colors text-amber hover:brightness-110"
+            title="Admin Panel"
+          >
+            <ShieldCheck size={20} />
+          </button>
+        )}
         <label className="switch hidden md:inline-block align-middle">
           <input 
             type="checkbox" 

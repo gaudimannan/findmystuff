@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Search, X } from "lucide-react";
+import { MapPin, Search, X, AlertTriangle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "../lib/supabase";
 
@@ -16,6 +16,13 @@ interface Item {
   type: string;
   image_url: string | null;
   expires_at: string;
+  flagged?: boolean;
+}
+
+interface Announcement {
+  id: string;
+  title: string;
+  message: string;
 }
 
 const FeedPage = () => {
@@ -25,6 +32,8 @@ const FeedPage = () => {
   const [filter, setFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState<"Lost" | "Found">("Lost");
   const [searchQuery, setSearchQuery] = useState("");
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [dismissedAnnouncements, setDismissedAnnouncements] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -44,6 +53,17 @@ const FeedPage = () => {
     };
 
     fetchItems();
+
+    // fetch active announcements
+    const fetchAnnouncements = async () => {
+      const { data } = await supabase
+        .from('announcements')
+        .select('id, title, message')
+        .eq('active', true)
+        .order('created_at', { ascending: false });
+      if (data) setAnnouncements(data);
+    };
+    fetchAnnouncements();
   }, []);
 
   const filtered = items.filter(
@@ -59,7 +79,24 @@ const FeedPage = () => {
   return (
     <div className="min-h-screen bg-background page-enter">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-6 md:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-6 md:px-8 pt-12 pb-24 md:pb-12">
+        {/* Announcement banners */}
+        {announcements
+          .filter((a) => !dismissedAnnouncements.has(a.id))
+          .map((a) => (
+            <div key={a.id} className="mb-4 bg-primary text-primary-foreground rounded-sm px-4 py-3 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest">{a.title}</p>
+                <p className="text-sm mt-0.5 opacity-90">{a.message}</p>
+              </div>
+              <button
+                onClick={() => setDismissedAnnouncements((prev) => new Set(prev).add(a.id))}
+                className="shrink-0 mt-0.5 opacity-70 hover:opacity-100 transition-opacity"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
         {/* Search Bar */}
         <div className="mb-8 max-w-md relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -135,9 +172,9 @@ const FeedPage = () => {
               return (
                 <Link to={`/item/${item.id}`} key={item.id} className={`group card-stagger-${i}`}>
                   <div className="bg-secondary border border-muted-foreground/20 rounded-sm transition-all duration-200 hover:border-secondary overflow-hidden">
-                    <div className="aspect-[3/2] md:aspect-[4/3] max-h-48 md:max-h-none bg-secondary-foreground/5 flex items-center justify-center text-secondary-foreground/20 uppercase tracking-widest text-[10px] overflow-hidden">
+                    <div className="w-full h-48 overflow-hidden bg-secondary-foreground/5 flex items-center justify-center text-secondary-foreground/20 uppercase tracking-widest text-[10px]">
                       {item.image_url ? (
-                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover object-center" />
                       ) : (
                         "No Image"
                       )}
@@ -147,6 +184,7 @@ const FeedPage = () => {
                         {item.category}
                       </span>
                       <h3 className="font-serif text-xl text-secondary-foreground mt-1 transition-colors duration-[120ms]">
+                        {(item as any).flagged && <AlertTriangle size={14} className="inline text-red-500 mr-1 -mt-0.5" />}
                         {item.title}
                       </h3>
                       <div className="flex justify-between items-center mt-5">

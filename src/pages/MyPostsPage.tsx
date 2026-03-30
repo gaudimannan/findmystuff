@@ -162,7 +162,7 @@ const MyPostsPage = () => {
   return (
     <div className="min-h-screen bg-background page-enter">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-20">
+      <main className="max-w-7xl mx-auto px-6 md:px-8 pt-16 pb-24 md:py-20">
         <h1 className="font-serif text-4xl text-foreground mb-12">My Posts</h1>
 
         {loading ? (
@@ -227,7 +227,7 @@ const MyPostsPage = () => {
                             {displayStatus === 'active' && (
                               <button 
                                 onClick={() => toggleExpandClaims(post.id)}
-                                className={`text-xs px-3 py-1 rounded transition-colors uppercase tracking-wider font-bold ${
+                                className={`text-xs px-3 py-1 min-h-[44px] rounded transition-colors uppercase tracking-wider font-bold ${
                                   post.pending_claims_count && post.pending_claims_count > 0 
                                     ? "bg-transparent border border-[hsl(var(--navy))] text-[hsl(var(--navy))] hover:bg-[hsl(var(--navy))/0.05]" 
                                     : "bg-transparent border border-muted-foreground text-muted-foreground opacity-50 cursor-not-allowed"
@@ -240,7 +240,7 @@ const MyPostsPage = () => {
                             <button 
                               onClick={() => handleDelete(post.id)}
                               disabled={isDeleting}
-                              className="bg-transparent border border-red-500 text-red-500 text-xs px-3 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider font-bold"
+                              className="bg-transparent border border-red-500 text-red-500 text-xs px-3 py-1 min-h-[44px] rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider font-bold"
                             >
                               {isDeleting ? "Deleting..." : "Delete"}
                             </button>
@@ -267,7 +267,7 @@ const MyPostsPage = () => {
                                     <div className="flex gap-2">
                                       <button 
                                         onClick={() => navigate(`/chat/${post.id}/${claim.claimant_id}`)}
-                                        className="bg-[hsl(var(--navy))] text-white hover:brightness-110 text-xs px-4 py-2 rounded-sm transition-all uppercase tracking-wider font-bold btn-press"
+                                        className="bg-[hsl(var(--navy))] text-white hover:brightness-110 text-xs px-4 py-2 min-h-[44px] rounded-sm transition-all uppercase tracking-wider font-bold btn-press"
                                       >
                                         Chat to Verify
                                       </button>

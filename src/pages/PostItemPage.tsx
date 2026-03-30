@@ -138,7 +138,7 @@ const PostItemPage = () => {
   return (
     <div className="min-h-screen bg-background page-enter">
       <Navbar />
-      <main className="max-w-5xl mx-auto px-6 md:px-8 py-16 md:py-20">
+      <main className="max-w-5xl mx-auto px-6 md:px-8 pt-16 pb-24 md:py-20">
         <h1 className="font-serif text-4xl text-foreground mb-12">Post an Item</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
           {/* Image upload */}
@@ -210,7 +210,7 @@ const PostItemPage = () => {
               <input
                 type="text"
                 placeholder="e.g. Sony WH-1000XM4"
-                className="bg-transparent field-focus outline-none py-2 font-sans text-foreground"
+                className="bg-transparent field-focus outline-none py-2 font-sans text-foreground min-h-[44px] w-full"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -228,11 +228,11 @@ const PostItemPage = () => {
             </div>
 
             {/* Category + Location */}
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div className="flex flex-col gap-1.5">
                 <label className="label-caps">Category</label>
                 <select 
-                  className="bg-transparent field-focus outline-none py-2 font-sans text-foreground rounded-none appearance-none"
+                  className="bg-transparent field-focus outline-none py-2 font-sans text-foreground rounded-none appearance-none min-h-[44px] w-full"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 >
@@ -245,7 +245,7 @@ const PostItemPage = () => {
               <div className="flex flex-col gap-1.5">
                 <label className="label-caps">Location</label>
                 <select 
-                  className="bg-transparent field-focus outline-none py-2 font-sans text-foreground rounded-none appearance-none"
+                  className="bg-transparent field-focus outline-none py-2 font-sans text-foreground rounded-none appearance-none min-h-[44px] w-full"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                 >
@@ -270,7 +270,7 @@ const PostItemPage = () => {
               <button 
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full bg-primary text-primary-foreground font-bold px-6 py-3.5 uppercase tracking-wider text-xs hover:brightness-90 transition-all duration-200 rounded-sm btn-press disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary text-primary-foreground font-bold px-6 py-3.5 min-h-[44px] uppercase tracking-wider text-xs hover:brightness-90 transition-all duration-200 rounded-sm btn-press disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Posting..." : "Post Item"}
               </button>
@@ -292,7 +292,7 @@ const PostItemPage = () => {
               onClick={() => {
                 cameraInputRef.current?.click();
               }}
-              className="w-full bg-primary text-primary-foreground font-bold py-3.5 uppercase tracking-wider text-xs rounded-sm btn-press hover:brightness-90 transition-all"
+              className="w-full bg-primary text-primary-foreground font-bold py-3.5 min-h-[44px] uppercase tracking-wider text-xs rounded-sm btn-press hover:brightness-90 transition-all"
             >
               📷 Take Photo
             </button>
@@ -300,7 +300,7 @@ const PostItemPage = () => {
               onClick={() => {
                 galleryInputRef.current?.click();
               }}
-              className="w-full border border-foreground text-foreground font-bold py-3.5 uppercase tracking-wider text-xs rounded-sm btn-press hover:bg-muted transition-all"
+              className="w-full border border-foreground text-foreground font-bold py-3.5 min-h-[44px] uppercase tracking-wider text-xs rounded-sm btn-press hover:bg-muted transition-all"
             >
               🖼 Choose from Gallery
             </button>

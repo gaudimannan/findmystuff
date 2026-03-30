@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "../lib/supabase";
 
@@ -9,6 +10,7 @@ interface Profile {
   email: string;
   phone: string;
   created_at: string;
+  is_admin: boolean;
 }
 
 const ProfilePage = () => {
@@ -83,7 +85,7 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-background font-sans flex flex-col page-enter">
       <Navbar />
-      <div className="flex-1 flex flex-col items-center justify-center p-6 pb-20">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 pb-24">
         <div className="w-full max-w-md bg-card border border-border p-6 md:p-12 rounded-sm relative shadow-sm">
           
           <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-4xl font-bold mx-auto mb-6 shadow-md border-4 border-background">
@@ -115,10 +117,24 @@ const ProfilePage = () => {
             </div>
           </div>
           
+          {/* Admin Section */}
+          {profile?.is_admin && (
+            <div className="mb-6">
+              <span className="label-caps block mb-3">ADMIN</span>
+              <button
+                onClick={() => navigate('/admin')}
+                className="w-full flex items-center justify-center gap-3 bg-amber-500 text-white font-bold uppercase tracking-wider text-xs rounded-xl p-4 min-h-[44px] hover:bg-amber-600 transition-colors btn-press shadow-md"
+              >
+                <ShieldCheck size={18} />
+                Admin Panel
+              </button>
+            </div>
+          )}
+
           {/* Sign Out Button */}
           <button 
             onClick={handleSignOut}
-            className="w-full py-4 border-2 border-primary text-primary font-bold uppercase tracking-wider text-xs hover:bg-primary hover:text-primary-foreground transition-colors duration-200 rounded-sm btn-press"
+            className="w-full py-4 min-h-[44px] border-2 border-primary text-primary font-bold uppercase tracking-wider text-xs hover:bg-primary hover:text-primary-foreground transition-colors duration-200 rounded-sm btn-press"
           >
             Sign Out
           </button>

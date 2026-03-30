@@ -149,7 +149,7 @@ const ItemDetailPage = () => {
     return (
       <div className="min-h-screen bg-background page-enter">
         <Navbar />
-        <main className="max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-20 text-center">
+        <main className="max-w-7xl mx-auto px-6 md:px-8 pt-16 pb-24 md:py-20 text-center">
           <p className="text-muted-foreground">Loading...</p>
         </main>
       </div>
@@ -160,7 +160,7 @@ const ItemDetailPage = () => {
     return (
       <div className="min-h-screen bg-background page-enter">
         <Navbar />
-        <main className="max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-20 text-center">
+        <main className="max-w-7xl mx-auto px-6 md:px-8 pt-16 pb-24 md:py-20 text-center">
           <p className="text-muted-foreground">Item not found.</p>
         </main>
       </div>
@@ -178,11 +178,11 @@ const ItemDetailPage = () => {
   return (
     <div className="min-h-screen bg-background page-enter">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-20">
+      <main className="max-w-7xl mx-auto px-6 md:px-8 pt-16 pb-24 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
           <div className="bg-secondary aspect-square flex items-center justify-center text-secondary-foreground/10 uppercase tracking-[0.3em] text-sm rounded-sm overflow-hidden">
             {item.image_url ? (
-              <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+              <img src={item.image_url} alt={item.title} className="w-full h-full object-cover object-center" />
             ) : (
               "Primary Image"
             )}
@@ -221,7 +221,7 @@ const ItemDetailPage = () => {
                     <button 
                       onClick={handleClaim}
                       disabled={claimLoading}
-                      className="w-full py-4 border-2 border-foreground text-foreground font-bold uppercase tracking-wider text-xs hover:bg-secondary hover:text-secondary-foreground transition-colors duration-200 rounded-sm btn-press disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-4 min-h-[44px] border-2 border-foreground text-foreground font-bold uppercase tracking-wider text-xs hover:bg-secondary hover:text-secondary-foreground transition-colors duration-200 rounded-sm btn-press disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {claimLoading ? "Submitting..." : "Claim This Item"}
                     </button>
@@ -232,7 +232,7 @@ const ItemDetailPage = () => {
                         console.log('navigating to chat with:', item.id, item.user_id);
                         navigate(`/chat/${item.id}/${item.user_id}`);
                       }}
-                      className="w-full py-4 bg-primary text-primary-foreground font-bold uppercase tracking-wider text-xs hover:brightness-90 transition-all duration-200 rounded-sm btn-press"
+                      className="w-full py-4 min-h-[44px] bg-primary text-primary-foreground font-bold uppercase tracking-wider text-xs hover:brightness-90 transition-all duration-200 rounded-sm btn-press"
                     >
                       Message Poster
                     </button>
@@ -253,7 +253,7 @@ const ItemDetailPage = () => {
                         console.log('navigating to chat with:', item.id, firstClaimantId);
                         navigate(`/chat/${item.id}/${firstClaimantId}`);
                       }}
-                      className="w-full py-4 border-2 border-[hsl(var(--navy))] text-[hsl(var(--navy))] font-bold uppercase tracking-wider text-xs hover:bg-[hsl(var(--navy))] hover:text-white transition-colors duration-200 rounded-sm btn-press"
+                      className="w-full py-4 min-h-[44px] border-2 border-[hsl(var(--navy))] text-[hsl(var(--navy))] font-bold uppercase tracking-wider text-xs hover:bg-[hsl(var(--navy))] hover:text-white transition-colors duration-200 rounded-sm btn-press"
                     >
                       View Messages
                     </button>
