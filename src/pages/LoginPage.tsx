@@ -89,10 +89,12 @@ const LoginPage = () => {
       hasError = true;
     }
     
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(phoneNumber.trim())) {
-      setPhoneError("Please enter a valid 10-digit phone number.");
-      hasError = true;
+    if (phoneNumber.trim() !== "") {
+      const phoneRegex = /^\d{10}$/;
+      if (!phoneRegex.test(phoneNumber.trim())) {
+        setPhoneError("Please enter a valid 10-digit phone number, or leave it blank.");
+        hasError = true;
+      }
     }
     
     if (hasError) return;
@@ -195,6 +197,8 @@ const LoginPage = () => {
           
         if (profileError) {
           console.error("Error updating profile:", profileError);
+          setAuthError("Profile DB Error: " + profileError.message);
+          return;
         }
       }
       navigate("/feed");
@@ -296,7 +300,7 @@ const LoginPage = () => {
                   {nameError && <p className="text-red-500 text-sm mt-1">{nameError}</p>}
                   
                   <div className="flex flex-col gap-1.5 w-full">
-                    <label className="label-caps">PHONE NUMBER</label>
+                    <label className="label-caps">PHONE NUMBER (OPTIONAL)</label>
                     <input
                       type="tel"
                       placeholder="Enter 10-digit phone number"

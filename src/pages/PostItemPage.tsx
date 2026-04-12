@@ -236,9 +236,9 @@ const PostItemPage = () => {
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 >
-                  <option value="">Select...</option>
+                  <option value="" className="bg-card text-foreground">Select...</option>
                   {categoryOptions.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c} className="bg-card text-foreground">{c}</option>
                   ))}
                 </select>
               </div>
@@ -249,9 +249,9 @@ const PostItemPage = () => {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                 >
-                  <option value="">Select...</option>
+                  <option value="" className="bg-card text-foreground">Select...</option>
                   {locationOptions.map((l) => (
-                    <option key={l} value={l}>{l}</option>
+                    <option key={l} value={l} className="bg-card text-foreground">{l}</option>
                   ))}
                 </select>
               </div>

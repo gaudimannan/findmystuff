@@ -18,6 +18,8 @@ interface Profile {
   last_name: string | null;
   email: string | null;
   phone: string | null;
+  show_email: boolean | null;
+  show_phone: boolean | null;
 }
 
 interface Item {
@@ -404,11 +406,19 @@ const ChatPage = () => {
               <div className="w-full space-y-4 pt-4 border-t border-foreground/5">
                 <div className="flex flex-col items-start">
                   <span className="text-[9px] label-caps text-muted-foreground mb-1">Email</span>
-                  <span className="text-sm font-medium">{otherUser?.email ?? 'Not available'}</span>
+                  <span className="text-sm font-medium">
+                    {otherUser?.show_email === false 
+                      ? <span className="text-muted-foreground italic text-xs">Hidden by user</span> 
+                      : (otherUser?.email ?? 'Not available')}
+                  </span>
                 </div>
                 <div className="flex flex-col items-start">
                   <span className="text-[9px] label-caps text-muted-foreground mb-1">Phone</span>
-                  <span className="text-sm font-medium">{otherUser?.phone ?? 'Not available'}</span>
+                  <span className="text-sm font-medium">
+                    {otherUser?.show_phone === false 
+                      ? <span className="text-muted-foreground italic text-xs">Hidden by user</span> 
+                      : (otherUser?.phone || 'Not available')}
+                  </span>
                 </div>
               </div>
             </div>
