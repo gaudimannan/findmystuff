@@ -157,44 +157,44 @@ const Navbar = () => {
     </nav>
     
     {/* Mobile Bottom Tab Bar */}
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[hsl(var(--navy))] flex justify-around items-center h-16 z-50 border-t border-background/10">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[hsl(var(--navy))] flex items-center justify-between h-[calc(4.5rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] z-50 border-t border-background/10">
       <Link
         to="/feed"
-        className={`flex flex-col items-center gap-1 ${location.pathname === '/feed' ? "text-primary" : "text-secondary-foreground/60"}`}
+        className={`flex-1 flex flex-col items-center justify-center gap-1 ${location.pathname === '/feed' ? "text-primary" : "text-secondary-foreground/60"}`}
       >
-        <Home size={20} />
+        <Home size={22} />
         <span className="text-[10px] font-bold uppercase tracking-wider">Home</span>
       </Link>
       <Link
         to="/post"
-        className={`flex flex-col items-center gap-1 ${location.pathname === '/post' ? "text-primary" : "text-secondary-foreground/60"}`}
+        className={`flex-1 flex flex-col items-center justify-center gap-1 ${location.pathname === '/post' ? "text-primary" : "text-secondary-foreground/60"}`}
       >
-        <PlusSquare size={20} />
+        <PlusSquare size={22} />
         <span className="text-[10px] font-bold uppercase tracking-wider">Post</span>
       </Link>
       <Link
         to="/my-posts"
-        className={`flex flex-col items-center gap-1 ${location.pathname === '/my-posts' ? "text-primary" : "text-secondary-foreground/60"}`}
+        className={`flex-1 flex flex-col items-center justify-center gap-1 ${location.pathname === '/my-posts' ? "text-primary" : "text-secondary-foreground/60"}`}
       >
-        <List size={20} />
+        <List size={22} />
         <span className="text-[10px] font-bold uppercase tracking-wider">My Posts</span>
       </Link>
       <Link
         to="/chats"
-        className={`flex flex-col items-center gap-1 relative ${location.pathname === '/chats' ? "text-primary" : "text-secondary-foreground/60"}`}
+        className={`flex-1 flex flex-col items-center justify-center gap-1 relative ${location.pathname === '/chats' ? "text-primary" : "text-secondary-foreground/60"}`}
       >
-        <MessageSquare size={20} />
+        <MessageSquare size={22} />
         {hasUnreadMessages && (
-          <span className="absolute top-0 right-1/4 w-2 h-2 bg-red-500 rounded-full" />
+          <span className="absolute top-[8px] right-[calc(50%-16px)] w-2.5 h-2.5 bg-red-500 rounded-full border-[1.5px] border-[hsl(var(--navy))]" />
         )}
         <span className="text-[10px] font-bold uppercase tracking-wider">Messages</span>
       </Link>
 
       <Link
         to="/profile"
-        className={`flex flex-col items-center gap-1 ${location.pathname === '/profile' ? "text-primary" : "text-secondary-foreground/60"}`}
+        className={`flex-1 flex flex-col items-center justify-center gap-1 ${location.pathname === '/profile' ? "text-primary" : "text-secondary-foreground/60"}`}
       >
-        <User size={20} />
+        <User size={22} />
         <span className="text-[10px] font-bold uppercase tracking-wider">Profile</span>
       </Link>
     </div>
